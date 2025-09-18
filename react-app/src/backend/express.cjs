@@ -48,12 +48,11 @@ app.get('/uditok', (req, res) => {
 
 app.get('udito/:id', (req, res) => {
     fs.readFile('uditok.txt', (err, data)=>{
+        // TODO - make readFile() sync
         if (err) res.status(404).json({fileError: err})
         else {
             if (data) {
                 const responseBodyArr = uditoDataRead(data)
-
-
 
                 res.status(200).json(responseBodyArr)
             } else res.status(404).json({fileError: data})
@@ -64,7 +63,23 @@ app.get('udito/:id', (req, res) => {
 app.post('/udito/:id', (req, res) => {
     // req.body json {"nev":"Sprite","liter":1,"bubis-e":true}
 
-    // TODO - if id exists?
+    // if id exists?
+    let existingId;
+    fs.readFile('uditok.txt', (err, data)=>{
+        if (err) res.status(404).json({fileError: err})
+        else {
+            if (data) {
+                const responseBodyArr = uditoDataRead(data)
+
+                const id = +req.params.id
+
+                const foundIndex = responseBodyArr.findIndex(udito => +udito.id == +id)
+                console.log('foundIndex', foundIndex)
+
+                if (foundIndex >= 0) existingId = id //res.status(300).json({error: "existing id conflict"})
+            } // else res.status(404).json({fileError: data}) // This is not a bug, but a feature!
+        }
+    })
     
     // if id does not exist yet:
     const id = +req.params.id
@@ -77,6 +92,7 @@ app.post('/udito/:id', (req, res) => {
     }
 
     const responseBody = {id: +req.params.id, ...req.body}
+    console.log('existingId', existingId)
     res.status(201).json(responseBody)
 })
 
