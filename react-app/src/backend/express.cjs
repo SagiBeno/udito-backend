@@ -13,7 +13,7 @@ const uditoDataRead = function(data) {
     console.log('lines', lines) // [ '1;Sprite;1;true', '2;Sprite;1;true', '' ]
 
     const responseBodyArr = lines.map(line => {
-        // TODO - find ;
+        // TODO - find;
         if (line.length >= 1) {
             const elements = line.split(';')
             return {
@@ -87,6 +87,42 @@ app.post('/udito/:id', (req, res) => {
     const newFileLine = `${req.params.id};${req.body.nev};${req.body.liter};${req.body["bubis-e"]}`
     try {
         fs.appendFileSync('uditok.txt', newFileLine + "\n")
+    } catch(e) {
+        res.status(500).json({fileError: e})
+    }
+
+    const responseBody = {id: +req.params.id, ...req.body}
+    console.log('existingId', existingId)
+    res.status(201).json(responseBody)
+})
+
+app.delete('/udito/:id', (req, res) => {
+    console.log('params', req.params)
+    let existingId;
+    fs.readFile('uditok.txt', (err, data)=>{
+        if (err) res.status(404).json({fileError: err})
+        else {
+            if (data) {
+                const responseBodyArr = uditoDataRead(data)
+
+                const id = +req.params?.id
+
+                const foundIndex = responseBodyArr.findIndex(udito => +udito.id == +id)
+                console.log('foundIndex', foundIndex)
+
+                if (foundIndex >= 0) existingId = id //res.status(300).json({error: "existing id conflict"})
+            } // else res.status(404).json({fileError: data}) // This is not a bug, but a feature!
+        }
+    })
+    
+    // if id does not exist yet:
+    const id = +req.params?.id
+
+    const deleteFileLine = `${req.params?.id};${req.body.nev};${req.body.liter};${req.body["bubis-e"]}`
+    try {
+        // TODO - delete id line
+        console.log('id, data', id, data)
+        fs.writeFileSync('uditok.txt', data)
     } catch(e) {
         res.status(500).json({fileError: e})
     }
