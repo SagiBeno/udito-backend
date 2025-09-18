@@ -37,7 +37,7 @@ app.get('/uditok', (req, res) => {
         else {
             if (data) {
                 const responseBodyArr = uditoDataRead(data)
-
+                
                 const id = +req.params.id
 
                 res.status(200).json(responseBodyArr[id-1])
